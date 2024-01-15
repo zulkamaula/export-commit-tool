@@ -1,6 +1,14 @@
+# Meminta input dari pengguna untuk author
+echo "Mohon masukkan nama Anda:"
+read author
+
+# Meminta input dari pengguna untuk tanggal mulai
+echo "Mohon masukkan tanggal mulai (format: YYYY-MM-DD):"
+read since
+
 # Variabel untuk menyimpan author dan since
-$author = "zulkamaula";
-$since = "2023-11-01";
+$author = $author;
+$since = $since;
 
 # Mendapatkan nama proyek
 $projectName = (Get-Location).Path | Split-Path -Leaf;
