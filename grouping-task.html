@@ -98,8 +98,12 @@
   </div>
   <!-- Tambahkan link ke file JavaScript Bootstrap dari CDN (ditempatkan sebelum penutup tag </body>) -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="lib/exceljs.min.js"></script>
+  <!-- Tambahkan link ke file JavaScript FileSaver.js dari CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.2/FileSaver.min.js"></script>
 
   <script>
+    
     function processData() {
       // Mendapatkan nilai dari textarea
       const rawData = document.getElementById('groupingData').value;
@@ -209,85 +213,95 @@
     }
 
     function downloadData() {
-      // Mendapatkan semua elemen section di dalam result-container
-      const sections = document.querySelectorAll('#result-container section');
+    // Mendapatkan semua elemen section di dalam result-container
+    const sections = document.querySelectorAll('#result-container section');
 
-      // Inisialisasi objek untuk menyimpan data
-      const data = {};
+    // Inisialisasi objek untuk menyimpan data
+    const data = {};
 
-      sections.forEach(section => {
-        const groupTitle = section.querySelector('h2').textContent;
-        const groupSubtitle = section.querySelector('p').textContent;
+    sections.forEach(section => {
+      const groupTitle = section.querySelector('h2').textContent;
+      const groupSubtitle = section.querySelector('p').textContent;
+      const projectName = section.querySelector('h3').textContent;
 
-        // Mendapatkan semua elemen li di dalam ul
-        const listItems = section.querySelectorAll('ul li');
+      // Mendapatkan semua elemen li di dalam ul
+      const listItems = section.querySelectorAll('ul li');
 
-        listItems.forEach(item => {
-          // Jika judul dan subjudul belum ada di objek data, tambahkan
-          if (!data[groupTitle]) {
-            data[groupTitle] = {};
-          }
-
-          if (!data[groupTitle][groupSubtitle]) {
-            data[groupTitle][groupSubtitle] = [];
-          }
-
-          // Tambahkan pesan ke array
-          data[groupTitle][groupSubtitle].push(item.textContent);
-        });
-      });
-
-      // Buat array untuk menyimpan data yang akan diekspor
-      const exportData = [];
-
-      // Iterasi melalui objek data dan gabungkan pesan
-      for (const title in data) {
-        for (const subtitle in data[title]) {
-          // Gabungkan pesan dan tambahkan ke array exportData
-          const message = data[title][subtitle].join(' | ');
-          exportData.push([title, subtitle, message]);
+      listItems.forEach(item => {
+        // Jika judul dan subjudul belum ada di objek data, tambahkan
+        if (!data[groupTitle]) {
+          data[groupTitle] = {};
         }
+
+        if (!data[groupTitle][groupSubtitle]) {
+          data[groupTitle][groupSubtitle] = [];
+        }
+
+        // Tambahkan pesan ke array
+        // data[groupTitle][groupSubtitle].push(item.textContent);
+        data[groupTitle][groupSubtitle].push({ projectName, message: item.textContent });
+      });
+    });
+
+    // Buat workbook baru
+    var workbook = new ExcelJS.Workbook();
+    var worksheet = workbook.addWorksheet("Data");
+
+    // Iterasi melalui objek data dan gabungkan pesan
+    worksheet.addRow(['Waktu', 'Nama Proyek', 'Pesan']);
+
+    for (const title in data) {
+      for (const subtitle in data[title]) {
+        const projectName = data[title][subtitle][0].projectName;
+        const messages = data[title][subtitle].map(item => `${item.message}`).join('\r\n');
+        const listProject = subtitle.replace('Group of: ', '');
+        const formattedMessage = projectName + '\r\n' + messages;
+
+        worksheet.addRow([title, listProject, formattedMessage]);
       }
-
-      // Buat workbook baru
-      const wb = XLSX.utils.book_new();
-
-      // Buat worksheet baru dengan data
-      const ws = XLSX.utils.aoa_to_sheet(exportData);
-
-      // Atur properti wrap pada sel pesan
-      ws['!cols'] = [
-      { wch: 20 },
-      { wch: 20 },
-      { wch: 50, wrap: true }
-      ];
-
-      // Tambahkan gaya ke sel
-      exportData.forEach((row, rowIndex) => {
-      row.forEach((cell, cellIndex) => {
-        ws[XLSX.utils.encode_cell({c: cellIndex, r: rowIndex})].s = {
-          font: {
-            name: 'Times New Roman',
-            sz: 10,
-            bold: true
-          },
-          border: {
-            top: { style: 'thin' },
-            bottom: { style: 'thin' },
-            left: { style: 'thin' },
-            right: { style: 'thin' }
-          }
-        };
-      });
-      });
-
-      // Tambahkan worksheet ke workbook
-      XLSX.utils.book_append_sheet(wb, ws, 'Data');
-
-      // Unduh workbook sebagai file Excel
-      XLSX.writeFile(wb, 'data.xlsx');
     }
 
+    // Atur lebar kolom
+    worksheet.columns = [
+      { header: 'Waktu', key: 'waktu', width: 20 },
+      { header: 'Nama Proyek', key: 'namaProyek', width: 20 },
+      { header: 'Hasil Grouping Task', key: 'hasilGroupingTask', width: 50 }
+    ];
+
+    // Atur tinggi baris dan aligment teks
+    worksheet.eachRow((row, rowNumber) => {
+      row.eachCell((cell, colNumber) => {
+        cell.alignment = { wrapText: true, vertical: 'middle', horizontal: 'left' };
+        cell.border = {
+          top: { style: 'thin' },
+          bottom: { style: 'thin' },
+          left: { style: 'thin' },
+          right: { style: 'thin' }
+        };
+      });
+      row.height = 20;
+    });
+
+    // Set tinggi baris secara manual
+    worksheet.eachRow(row => {
+      const maxContentHeight = Math.max(...row.values.map(value => {
+        return value.toString().split('\n').length;
+      }));
+      row.height = 15 * maxContentHeight; // Sesuaikan angka 15 sesuai dengan kebutuhan
+    });
+
+    // Simpan workbook sebagai file Excel
+    workbook.xlsx.writeBuffer()
+      .then(buffer => {
+        // Membuat blob dari buffer
+        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+        // Menyimpan blob ke file
+        saveAs(blob, 'data.xlsx');
+      })
+      .catch(err => console.error('Error writing file:', err));
+  }
+    
 
   </script>
 
