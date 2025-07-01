@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Git Commit Export Tool - Standalone Version</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            margin: 20px auto;
+            max-width: 1400px;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 20px 20px 0 0;
+            text-align: center;
+        }
+        
+        .section-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e0e0e0;
+        }
+        
+        .section-title {
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            padding: 12px 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .btn-custom {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 30px;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+            color: white;
+        }
+        
+        .btn-success-custom {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+        
+        .btn-success-custom:hover {
+            box-shadow: 0 10px 25px rgba(40, 167, 69, 0.3);
+        }
+        
+        .result-container {
+            max-height: 600px;
+            overflow-y: auto;
+            border-radius: 15px;
+            background: #f8f9fa;
+            padding: 20px;
+        }
+        
+        .commit-group {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 5px solid #667eea;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+        
+        .commit-group h4 {
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .project-section {
+            margin-bottom: 15px;
+        }
+        
+        .project-title {
+            color: #495057;
+            font-weight: 600;
+            font-size: 1.1em;
+            margin-bottom: 8px;
+        }
+        
+        .commit-item {
+            background: #f8f9fa;
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            border-left: 3px solid #28a745;
+        }
+        
+        .alert-custom {
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .instructions {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .code-snippet {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.9em;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="header">
+            <h1><i class="fas fa-code-branch me-3"></i>Git Commit Export Tool</h1>
+            <p class="mb-0">Standalone Version - Import your git data and process commits</p>
+        </div>
+        
+        <div class="section-card">
+            <h3 class="section-title">
+                <i class="fas fa-info-circle me-2"></i>How to Export Git Commits (Manual)
+            </h3>
+            <div class="instructions">
+                <p><strong>Since this is a standalone version, you need to export git data manually first:</strong></p>
+                <ol>
+                    <li>Open Terminal</li>
+                    <li>Navigate to your project folder: <code>cd /path/to/your/project</code></li>
+                    <li>Run this command to export commits:</li>
+                </ol>
+                <div class="code-snippet mt-2">
+                    git log --reverse --author="<strong>YOUR_AUTHOR_NAME</strong>" --since="<strong>YYYY-MM-DD</strong>" --until="<strong>YYYY-MM-DD</strong>" --pretty=format:"%ad%x09Project <strong>PROJECT_NAME</strong>%x09%s" --date=short
+                </div>
+                <p class="mt-2 mb-0"><small>Replace <strong>YOUR_AUTHOR_NAME</strong>, dates, and <strong>PROJECT_NAME</strong> with your actual values</small></p>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <label class="form-label">Quick Command Generator:</label>
+                    <input type="text" class="form-control mb-2" id="projectPath" placeholder="Project path (e.g., /Users/you/project)">
+                    <input type="text" class="form-control mb-2" id="authorName" placeholder="Author name">
+                    <input type="date" class="form-control mb-2" id="sinceDate">
+                    <input type="date" class="form-control mb-3" id="untilDate">
+                    <button class="btn btn-outline-primary" onclick="generateCommand()">Generate Command</button>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Generated Command:</label>
+                    <textarea class="form-control" id="generatedCommand" rows="4" readonly 
+                              placeholder="Fill the fields on the left to generate git command"></textarea>
+                    <button class="btn btn-outline-success mt-2" onclick="copyCommand()">Copy Command</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Raw Data Section -->
+        <div class="section-card">
+            <h3 class="section-title">
+                <i class="fas fa-file-alt me-2"></i>Import & Process Commit Data
+            </h3>
+            
+            <div class="mb-3">
+                <label for="rawCommitData" class="form-label">Paste Git Commit Data Here:</label>
+                <textarea class="form-control" id="rawCommitData" rows="12" 
+                          placeholder="Paste the output from git log command here...&#10;&#10;Format should be:&#10;2024-01-15	Project MYAPP	Initial commit&#10;2024-01-15	Project MYAPP	Add user feature&#10;2024-01-16	Project MYAPP	Fix bug in login"></textarea>
+                <div class="form-text">Format: Date[TAB]Project Name[TAB]Message</div>
+            </div>
+            
+            <button type="button" class="btn btn-custom w-100" onclick="processCommits()">
+                <i class="fas fa-cogs me-2"></i>Process & Group Commits
+            </button>
+            
+            <div id="processAlert"></div>
+        </div>
+        
+        <!-- Results Section -->
+        <div class="section-card">
+            <h3 class="section-title">
+                <i class="fas fa-layer-group me-2"></i>Grouped Results
+            </h3>
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <button type="button" class="btn btn-success-custom" onclick="downloadExcel()" id="downloadBtn" disabled>
+                        <i class="fas fa-file-excel me-2"></i>Download Excel
+                    </button>
+                </div>
+                <div class="col-md-6 text-end">
+                    <button type="button" class="btn btn-outline-secondary" onclick="clearResults()">
+                        <i class="fas fa-trash me-2"></i>Clear Results
+                    </button>
+                </div>
+            </div>
+            
+            <div class="result-container" id="resultsContainer">
+                <div class="text-center text-muted">
+                    <i class="fas fa-info-circle fa-3x mb-3"></i>
+                    <p>Import and process commits to see grouped results here</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        let groupedCommits = {};
+        
+        // Set default dates
+        document.getElementById('untilDate').value = new Date().toISOString().split('T')[0];
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        document.getElementById('sinceDate').value = thirtyDaysAgo.toISOString().split('T')[0];
+        
+        function generateCommand() {
+            const projectPath = document.getElementById('projectPath').value.trim();
+            const authorName = document.getElementById('authorName').value.trim();
+            const sinceDate = document.getElementById('sinceDate').value;
+            const untilDate = document.getElementById('untilDate').value || new Date().toISOString().split('T')[0];
+            
+            if (!projectPath || !authorName || !sinceDate) {
+                alert('Please fill in project path, author name, and since date');
+                return;
+            }
+            
+            const projectName = projectPath.split('/').pop().toUpperCase();
+            const command = `cd "${projectPath}" && git log --reverse --author="${authorName}" --since="${sinceDate}" --until="${untilDate}" --pretty=format:"%ad%x09Project ${projectName}%x09%s" --date=short`;
+            
+            document.getElementById('generatedCommand').value = command;
+        }
+        
+        function copyCommand() {
+            const commandText = document.getElementById('generatedCommand').value;
+            if (!commandText) {
+                alert('Generate a command first');
+                return;
+            }
+            
+            navigator.clipboard.writeText(commandText).then(() => {
+                alert('Command copied to clipboard!');
+            }).catch(() => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = commandText;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('Command copied to clipboard!');
+            });
+        }
+        
+        function processCommits() {
+            const rawData = document.getElementById('rawCommitData').value.trim();
+            
+            if (!rawData) {
+                showAlert('processAlert', 'No commit data to process', 'warning');
+                return;
+            }
+            
+            groupedCommits = {};
+            const lines = rawData.split('\n');
+            let processedCount = 0;
+            let errorLines = [];
+            
+            lines.forEach((line, index) => {
+                const cleanedLine = line.replace(/['"]+/g, '').trim();
+                
+                // Skip merge commits and empty lines
+                if (cleanedLine.match(/Merge branch /i) || cleanedLine.match(/Merge pull /i) || !cleanedLine) {
+                    return;
+                }
+                
+                // Try tab-separated first, then fallback to multiple spaces
+                let parts = cleanedLine.split('\t');
+                
+                // If we don't have enough parts with tabs, try splitting by multiple spaces
+                if (parts.length < 3) {
+                    // Split by multiple spaces (2 or more) to handle space-separated format
+                    parts = cleanedLine.split(/\s{2,}/);
+                }
+                
+                // If still not enough parts, try to parse manually by finding the project pattern
+                if (parts.length < 3) {
+                    // Look for "Project" keyword to split the line
+                    const projectMatch = cleanedLine.match(/^(\S+)\s+(Project[^\s]+)\s+(.+)$/);
+                    if (projectMatch) {
+                        parts = [projectMatch[1], projectMatch[2], projectMatch[3]];
+                    }
+                }
+                
+                if (parts.length >= 3) {
+                    const [date, project, ...messageParts] = parts;
+                    const message = messageParts.join(' '); // Join with space for better readability
+                    
+                    // Validate date format
+                    const normalizedDate = normalizeDate(date.trim());
+                    if (!normalizedDate) {
+                        errorLines.push(`Line ${index + 1}: Invalid date format "${date.trim()}"`);
+                        return;
+                    }
+                    
+                    const cleanProject = project.trim();
+                    const cleanMessage = message.trim();
+                    
+                    if (!cleanProject || !cleanMessage) {
+                        errorLines.push(`Line ${index + 1}: Missing project or message`);
+                        return;
+                    }
+                    
+                    if (!groupedCommits[normalizedDate]) {
+                        groupedCommits[normalizedDate] = {};
+                    }
+                    
+                    if (!groupedCommits[normalizedDate][cleanProject]) {
+                        groupedCommits[normalizedDate][cleanProject] = [];
+                    }
+                    
+                    groupedCommits[normalizedDate][cleanProject].push(cleanMessage);
+                    processedCount++;
+                } else {
+                    errorLines.push(`Line ${index + 1}: Invalid format - expected 3 parts (date, project, message), got ${parts.length}`);
+                }
+            });
+            
+            if (processedCount === 0) {
+                let errorMessage = 'No valid commit data found. Please check the format.';
+                if (errorLines.length > 0) {
+                    errorMessage += '\n\nErrors found:\n' + errorLines.slice(0, 5).join('\n');
+                    if (errorLines.length > 5) {
+                        errorMessage += `\n... and ${errorLines.length - 5} more errors`;
+                    }
+                }
+                showAlert('processAlert', errorMessage, 'warning');
+                return;
+            }
+            
+            displayGroupedCommits();
+            document.getElementById('downloadBtn').disabled = false;
+            
+            let successMessage = `Successfully processed ${processedCount} commits!`;
+            if (errorLines.length > 0) {
+                successMessage += ` (${errorLines.length} lines skipped due to format issues)`;
+            }
+            showAlert('processAlert', successMessage, 'success');
+        }
+        
+        function normalizeDate(dateString) {
+            try {
+                // Handle different date formats
+                let cleanDate = dateString.trim();
+                
+                // If already in YYYY-MM-DD format, validate and return
+                if (/^\d{4}-\d{2}-\d{2}$/.test(cleanDate)) {
+                    const date = new Date(cleanDate + 'T00:00:00');
+                    if (!isNaN(date.getTime())) {
+                        return cleanDate;
+                    }
+                }
+                
+                // Try parsing as a general date
+                const date = new Date(cleanDate);
+                if (!isNaN(date.getTime())) {
+                    return date.toISOString().split('T')[0];
+                }
+                
+                return null; // Invalid date
+            } catch {
+                return null; // Invalid date
+            }
+        }
+        
+        function displayGroupedCommits() {
+            const container = document.getElementById('resultsContainer');
+            container.innerHTML = '';
+            
+            if (Object.keys(groupedCommits).length === 0) {
+                container.innerHTML = `
+                    <div class="text-center text-muted">
+                        <i class="fas fa-exclamation-circle fa-3x mb-3"></i>
+                        <p>No commits to display</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Sort dates (oldest first)
+            const sortedDates = Object.keys(groupedCommits).sort();
+            
+            sortedDates.forEach(date => {
+                const projects = groupedCommits[date];
+                const projectNames = Object.keys(projects);
+                
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'commit-group';
+                
+                groupDiv.innerHTML = `
+                    <h4><i class="fas fa-calendar-alt me-2"></i>${formatDisplayDate(date)}</h4>
+                    <p class="text-muted mb-3"><strong>Projects:</strong> ${projectNames.join(', ')}</p>
+                    <hr>
+                `;
+                
+                projectNames.forEach(project => {
+                    const projectSection = document.createElement('div');
+                    projectSection.className = 'project-section';
+                    
+                    const projectTitle = document.createElement('div');
+                    projectTitle.className = 'project-title';
+                    projectTitle.innerHTML = `<i class="fas fa-folder me-2"></i>${project}`;
+                    projectSection.appendChild(projectTitle);
+                    
+                    projects[project].forEach(commit => {
+                        const commitItem = document.createElement('div');
+                        commitItem.className = 'commit-item';
+                        commitItem.innerHTML = `<i class="fas fa-check-circle me-2 text-success"></i>${commit}`;
+                        projectSection.appendChild(commitItem);
+                    });
+                    
+                    groupDiv.appendChild(projectSection);
+                });
+                
+                container.appendChild(groupDiv);
+            });
+        }
+        
+        function formatDisplayDate(dateString) {
+            try {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('en-US', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                });
+            } catch {
+                return dateString;
+            }
+        }
+        
+        function downloadExcel() {
+            if (Object.keys(groupedCommits).length === 0) {
+                alert('No data to export');
+                return;
+            }
+            
+            const workbook = XLSX.utils.book_new();
+            const worksheetData = [];
+            
+            // Add headers
+            worksheetData.push(['Waktu', 'Nama Proyek', 'Hasil Grouping Task']);
+            
+            // Sort dates (oldest first)
+            const sortedDates = Object.keys(groupedCommits).sort();
+            
+            sortedDates.forEach(date => {
+                const projects = groupedCommits[date];
+                const projectNames = Object.keys(projects);
+                
+                projectNames.forEach(project => {
+                    const commits = projects[project];
+                    const formattedCommits = commits.map(commit => `• ${commit}`).join('\n');
+                    const projectList = projectNames.join(', ');
+                    const fullMessage = `${project}\n${formattedCommits}`;
+                    
+                    worksheetData.push([
+                        formatDisplayDate(date),
+                        projectList,
+                        fullMessage
+                    ]);
+                });
+            });
+            
+            const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+            
+            // Set column widths
+            worksheet['!cols'] = [
+                { wch: 20 }, // Waktu
+                { wch: 30 }, // Nama Proyek  
+                { wch: 60 }  // Hasil Grouping Task
+            ];
+            
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'Commit Groups');
+            
+            // Generate filename with current date
+            const now = new Date();
+            const filename = `commit_export_${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2,'0')}-${now.getDate().toString().padStart(2,'0')}.xlsx`;
+            
+            XLSX.writeFile(workbook, filename);
+        }
+        
+        function clearResults() {
+            if (confirm('Are you sure you want to clear all results?')) {
+                groupedCommits = {};
+                document.getElementById('resultsContainer').innerHTML = `
+                    <div class="text-center text-muted">
+                        <i class="fas fa-info-circle fa-3x mb-3"></i>
+                        <p>Import and process commits to see grouped results here</p>
+                    </div>
+                `;
+                document.getElementById('rawCommitData').value = '';
+                document.getElementById('downloadBtn').disabled = true;
+                showAlert('processAlert', '', '');
+            }
+        }
+        
+        function showAlert(containerId, message, type) {
+            const container = document.getElementById(containerId);
+            if (!message) {
+                container.innerHTML = '';
+                return;
+            }
+            
+            const alertClass = type === 'success' ? 'alert-success' : 
+                             type === 'warning' ? 'alert-warning' : 'alert-danger';
+            
+            container.innerHTML = `
+                <div class="alert ${alertClass} alert-custom mt-3" role="alert">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 
+                                     type === 'warning' ? 'exclamation-triangle' : 'times-circle'} me-2"></i>
+                    ${message}
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
