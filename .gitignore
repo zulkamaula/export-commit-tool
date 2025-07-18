@@ -1,14 +1,23 @@
-# Ignore Mac system files
-.DS_store
-
-# Ignore node_modules folder
+# Dependencies
 node_modules/
 
-# Ignore all text files
-*.txt
+# System files
+.DS_Store
+.vscode/settings.json
 
-# Ignore files related to API keys
-.env
+# Logs
+*.log
+npm-debug.log*
+
+# Output files
+*.xlsx
+*.xls
+commit_export_*.xlsx
+
+# Vue/Vite build files
+dist/
+dist-ssr/
+*.localenv
 
 # Ignore SASS config files
 .sass-cache/

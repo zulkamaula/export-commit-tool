@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Git Commit Export Tool - Enhanced Standalone</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            margin: 20px auto;
+            max-width: 1400px;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 20px 20px 0 0;
+            text-align: center;
+        }
+        
+        .section-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e0e0e0;
+        }
+        
+        .section-title {
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            padding: 12px 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .btn-custom {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 30px;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+            color: white;
+        }
+        
+        .btn-success-custom {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+        
+        .btn-success-custom:hover {
+            box-shadow: 0 10px 25px rgba(40, 167, 69, 0.3);
+        }
+        
+        .result-container {
+            max-height: 600px;
+            overflow-y: auto;
+            border-radius: 15px;
+            background: #f8f9fa;
+            padding: 20px;
+        }
+        
+        .commit-group {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 5px solid #667eea;
+        }
+        
+        .commit-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-left: 3px solid #28a745;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .loading.show {
+            display: block;
+        }
+        
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+        }
+        
+        .server-status {
+            padding: 10px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        .server-status.online {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .server-status.offline {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .alert-custom {
+            border-radius: 10px;
+            border: none;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+        }
+        
+        .one-click-section {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px;
+            text-align: center;
+        }
+        
+        .one-click-section h3 {
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+        
+        .btn-one-click {
+            background: white;
+            color: #28a745;
+            border: none;
+            border-radius: 10px;
+            padding: 15px 40px;
+            font-weight: 700;
+            font-size: 1.1em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-one-click:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(255, 255, 255, 0.3);
+            color: #28a745;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="header">
+            <h1><i class="fas fa-magic me-3"></i>Git Commit Export Tool</h1>
+            <p class="mb-0">Enhanced Standalone Version - One-Click Export & Process</p>
+        </div>
+
+        <!-- Server Status -->
+        <div class="mx-4 mt-4">
+            <div id="serverStatus" class="server-status offline">
+                <i class="fas fa-circle me-2"></i>
+                <span id="serverStatusText">Checking server...</span>
+            </div>
+        </div>
+
+        <!-- Git Commit Extract Section -->
+        <div class="one-click-section">
+            <h3><i class="fas fa-code-branch me-2"></i>Git Commit Extract & Grouping</h3>
+            <p>Isi data project git Anda, lalu klik untuk extract dan lihat hasil grouping!</p>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="projectPath" class="form-label">Project Path</label>
+                    <input type="text" class="form-control" id="projectPath" 
+                           placeholder="/Users/zulkariskimauladi/Projects/nama-project">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="authorName" class="form-label">Author Name</label>
+                    <input type="text" class="form-control" id="authorName" 
+                           placeholder="Nama Anda (git config user.name)">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="sinceDate" class="form-label">Since Date</label>
+                    <input type="date" class="form-control" id="sinceDate">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="untilDate" class="form-label">Until Date</label>
+                    <input type="date" class="form-control" id="untilDate">
+                </div>
+            </div>
+            
+            <!-- Filter Options -->
+            <div class="mb-3">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="skipMergeCommits" checked>
+                    <label class="form-check-label" for="skipMergeCommits">
+                        <i class="fas fa-filter me-2"></i>Skip merge commits ("Merge pull", "Merge branch")
+                    </label>
+                </div>
+            </div>
+            
+            <button class="btn btn-one-click" onclick="extractAndGroupCommits()">
+                <i class="fas fa-search me-2"></i>Extract & Group Commits
+            </button>
+        </div>
+
+        <!-- Loading -->
+        <div id="loading" class="loading">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <div class="mt-3">
+                <h5>Sedang extract commits...</h5>
+                <p>Mohon tunggu sementara kami mengambil data commit dari repository git Anda dan melakukan grouping.</p>
+            </div>
+        </div>
+
+        <!-- Alert Container -->
+        <div id="alertContainer" class="mx-4"></div>
+
+        <!-- Manual Input Section (Fallback) -->
+        <div class="section-card">
+            <h3 class="section-title">
+                <i class="fas fa-edit me-2"></i>Manual Input (Fallback)
+            </h3>
+            <div class="mb-3">
+                <label for="commitData" class="form-label">Paste Git Commit Data Here</label>
+                <textarea class="form-control" id="commitData" rows="10" 
+                          placeholder="Format: 2024-01-15	ProjectName	Commit message"></textarea>
+            </div>
+            <button class="btn btn-custom" onclick="processCommits()">
+                <i class="fas fa-cogs me-2"></i>Process & Group Commits
+            </button>
+        </div>
+
+        <!-- Results Section -->
+        <div class="section-card">
+            <h3 class="section-title">
+                <i class="fas fa-chart-bar me-2"></i>Hasil Grouping Commits
+                <span id="commitStats" class="badge bg-secondary ms-2" style="display: none;"></span>
+            </h3>
+            <div id="results" class="result-container">
+                <div class="text-center text-muted">
+                    <i class="fas fa-info-circle fa-3x mb-3"></i>
+                    <p>Hasil grouping akan muncul di sini setelah extract commits</p>
+                </div>
+            </div>
+            <div class="mt-3">
+                <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                    <button class="btn btn-success-custom btn-lg me-2" onclick="downloadExcel()" style="display: none;" id="downloadBtn">
+                        <i class="fas fa-download me-2"></i>Download Excel File
+                    </button>
+                    <button class="btn btn-outline-secondary" onclick="clearResults()">
+                        <i class="fas fa-trash me-2"></i>Clear Results
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let groupedCommits = {};
+        
+        // Set default dates
+        document.getElementById('untilDate').value = new Date().toISOString().split('T')[0];
+        const lastMonth = new Date();
+        lastMonth.setMonth(lastMonth.getMonth() - 1);
+        document.getElementById('sinceDate').value = lastMonth.toISOString().split('T')[0];
+
+        // Check server status on load
+        window.addEventListener('load', checkServerStatus);
+
+        // Check if server is running
+        async function checkServerStatus() {
+            try {
+                const response = await fetch('http://localhost:3001/');
+                document.getElementById('serverStatus').className = 'server-status online';
+                document.getElementById('serverStatusText').textContent = 'Server Online - One-Click Export Available';
+            } catch (error) {
+                document.getElementById('serverStatus').className = 'server-status offline';
+                document.getElementById('serverStatusText').textContent = 'Server Offline - Please run: node simple-server.js';
+            }
+        }
+
+        // Extract and group commits (separated from export)
+        async function extractAndGroupCommits() {
+            const projectPath = document.getElementById('projectPath').value.trim();
+            const authorName = document.getElementById('authorName').value.trim();
+            const sinceDate = document.getElementById('sinceDate').value;
+            const untilDate = document.getElementById('untilDate').value;
+
+            if (!projectPath || !authorName || !sinceDate) {
+                showAlert('alertContainer', 'Please fill in Project Path, Author Name, and Since Date', 'danger');
+                return;
+            }
+
+            // Show loading
+            document.getElementById('loading').classList.add('show');
+            clearAlerts();
+
+            try {
+                const response = await fetch('http://localhost:3001/execute-git', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        projectPath,
+                        authorName,
+                        sinceDate,
+                        untilDate
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Put result in textarea
+                    document.getElementById('commitData').value = result.output;
+                    
+                    // Auto-process the commits
+                    processCommits();
+                    
+                    // Count total commits after processing
+                    let totalCommits = 0;
+                    Object.keys(groupedCommits).forEach(date => {
+                        Object.keys(groupedCommits[date]).forEach(project => {
+                            totalCommits += groupedCommits[date][project].length;
+                        });
+                    });
+                    
+                    showAlert('alertContainer', 
+                        `✅ Berhasil extract ${result.lineCount} commits baru dan ditambahkan ke hasil grouping! Total commits: ${totalCommits}. Lihat hasil di bawah, lalu klik "Download Excel" jika sudah sesuai.`, 
+                        'success');
+                } else {
+                    showAlert('alertContainer', `❌ Error: ${result.error}`, 'danger');
+                }
+            } catch (error) {
+                showAlert('alertContainer', 
+                    `❌ Connection error: ${error.message}. Make sure server is running: node simple-server.js`, 
+                    'danger');
+            } finally {
+                // Hide loading
+                document.getElementById('loading').classList.remove('show');
+            }
+        }
+
+        // Process commits (existing function)
+        function processCommits() {
+            const commitData = document.getElementById('commitData').value.trim();
+            
+            if (!commitData) {
+                showAlert('alertContainer', 'Please provide commit data', 'danger');
+                return;
+            }
+
+            // DON'T reset groupedCommits - preserve existing data
+            // groupedCommits = {}; // <-- REMOVED this line
+            const lines = commitData.split('\n');
+            let processedCount = 0;
+            let errorCount = 0;
+            let skippedMergeCount = 0;
+
+            lines.forEach((line, index) => {
+                if (!line.trim()) return;
+
+                let parts;
+                const lineNumber = index + 1;
+
+                // Try tab-separated first
+                if (line.includes('\t')) {
+                    parts = line.split('\t');
+                } else if (line.includes('  ')) {
+                    // Multiple spaces
+                    parts = line.split(/\s{2,}/);
+                } else {
+                    // Regex pattern for date project message
+                    const match = line.match(/^(\d{4}-\d{2}-\d{2})\s+(.+?)\s+(.+)$/);
+                    if (match) {
+                        parts = [match[1], match[2], match[3]];
+                    } else {
+                        console.warn(`Line ${lineNumber}: Could not parse - ${line}`);
+                        errorCount++;
+                        return;
+                    }
+                }
+
+                if (parts.length < 3) {
+                    console.warn(`Line ${lineNumber}: Invalid format - ${line}`);
+                    errorCount++;
+                    return;
+                }
+
+                const [rawDate, projectName, commitMessage] = parts;
+                const date = normalizeDate(rawDate.trim());
+
+                if (!date) {
+                    console.warn(`Line ${lineNumber}: Invalid date format - ${rawDate}`);
+                    errorCount++;
+                    return;
+                }
+
+                // Skip merge commits (if option is enabled)
+                const message = commitMessage.trim();
+                const skipMergeCommits = document.getElementById('skipMergeCommits').checked;
+                if (skipMergeCommits && (message.startsWith('Merge pull') || message.startsWith('Merge branch'))) {
+                    console.log(`Skipping merge commit: ${message}`);
+                    skippedMergeCount++;
+                    return;
+                }
+
+                // Group by date and project
+                if (!groupedCommits[date]) {
+                    groupedCommits[date] = {};
+                }
+                if (!groupedCommits[date][projectName]) {
+                    groupedCommits[date][projectName] = [];
+                }
+                groupedCommits[date][projectName].push(commitMessage.trim());
+                processedCount++;
+            });
+
+            if (processedCount === 0) {
+                showAlert('alertContainer', 'No valid commit data found. Please check the format.', 'danger');
+                return;
+            }
+
+            displayGroupedCommits();
+            document.getElementById('downloadBtn').style.display = 'inline-block';
+            
+            // Count total commits in groupedCommits
+            let totalCommits = 0;
+            Object.keys(groupedCommits).forEach(date => {
+                Object.keys(groupedCommits[date]).forEach(project => {
+                    totalCommits += groupedCommits[date][project].length;
+                });
+            });
+            
+            let message = `✅ Berhasil menambahkan ${processedCount} commits baru. Total commits: ${totalCommits}`;
+            if (skippedMergeCount > 0) {
+                message += ` (${skippedMergeCount} merge commits diabaikan)`;
+            }
+            if (errorCount > 0) {
+                message += ` (${errorCount} lines had errors)`;
+            }
+            showAlert('alertContainer', message, 'success');
+        }
+
+        // Normalize date function
+        function normalizeDate(dateString) {
+            const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+            if (dateRegex.test(dateString)) {
+                return dateString;
+            }
+            
+            const date = new Date(dateString);
+            if (!isNaN(date.getTime())) {
+                return date.toISOString().split('T')[0];
+            }
+            
+            return null;
+        }
+
+        // Display grouped commits
+        function displayGroupedCommits() {
+            const resultsDiv = document.getElementById('results');
+            const sortedDates = Object.keys(groupedCommits).sort();
+            
+            let html = '';
+            sortedDates.forEach(date => {
+                const displayDate = formatDisplayDate(date);
+                html += `<div class="commit-group">
+                    <h4 class="mb-3"><i class="fas fa-calendar-alt me-2"></i>${displayDate}</h4>`;
+                
+                Object.keys(groupedCommits[date]).forEach(project => {
+                    const commits = groupedCommits[date][project];
+                    html += `<div class="commit-item">
+                        <h5 class="mb-2"><i class="fas fa-folder me-2"></i>${project}</h5>
+                        <ul class="mb-0">`;
+                    commits.forEach(commit => {
+                        html += `<li>${commit}</li>`;
+                    });
+                    html += `</ul></div>`;
+                });
+                
+                html += '</div>';
+            });
+            
+            resultsDiv.innerHTML = html;
+            
+            // Update stats badge
+            const totalCommits = Object.keys(groupedCommits).reduce((total, date) => {
+                return total + Object.keys(groupedCommits[date]).reduce((dateTotal, project) => {
+                    return dateTotal + groupedCommits[date][project].length;
+                }, 0);
+            }, 0);
+            
+            const totalProjects = new Set();
+            Object.keys(groupedCommits).forEach(date => {
+                Object.keys(groupedCommits[date]).forEach(project => {
+                    totalProjects.add(project);
+                });
+            });
+            
+            const statsElement = document.getElementById('commitStats');
+            statsElement.textContent = `${totalCommits} commits, ${totalProjects.size} projects`;
+            statsElement.style.display = 'inline-block';
+        }
+
+        // Format display date
+        function formatDisplayDate(dateString) {
+            const date = new Date(dateString + 'T00:00:00');
+            return date.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+        }
+
+        // Download Excel
+        function downloadExcel() {
+            if (Object.keys(groupedCommits).length === 0) {
+                showAlert('alertContainer', 'No data to export', 'danger');
+                return;
+            }
+
+            const data = [];
+            const sortedDates = Object.keys(groupedCommits).sort();
+            
+            sortedDates.forEach(date => {
+                const displayDate = formatDisplayDate(date);
+                
+                Object.keys(groupedCommits[date]).forEach(project => {
+                    const commits = groupedCommits[date][project];
+                    const commitText = commits.map(commit => `• ${commit}`).join('\n');
+                    
+                    data.push({
+                        'Waktu': displayDate,
+                        'Nama Proyek': project,
+                        'Hasil Grouping Task': `${project}\n${commitText}`
+                    });
+                });
+            });
+
+            const worksheet = XLSX.utils.json_to_sheet(data);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'Commits');
+            
+            const today = new Date().toISOString().split('T')[0];
+            XLSX.writeFile(workbook, `commit_export_${today}.xlsx`);
+            
+            showAlert('alertContainer', `✅ Excel file downloaded: commit_export_${today}.xlsx`, 'success');
+        }
+
+        // Clear results
+        function clearResults() {
+            groupedCommits = {};
+            document.getElementById('results').innerHTML = `
+                <div class="text-center text-muted">
+                    <i class="fas fa-info-circle fa-3x mb-3"></i>
+                    <p>Hasil grouping akan muncul di sini setelah extract commits</p>
+                </div>`;
+            document.getElementById('downloadBtn').style.display = 'none';
+            document.getElementById('commitData').value = '';
+            document.getElementById('commitStats').style.display = 'none';
+            clearAlerts();
+        }
+
+        // Show alert
+        function showAlert(containerId, message, type = 'info') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-custom`;
+            alertDiv.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
+                ${message}
+            `;
+            
+            document.getElementById(containerId).appendChild(alertDiv);
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+
+        // Clear alerts
+        function clearAlerts() {
+            document.getElementById('alertContainer').innerHTML = '';
+        }
+    </script>
+</body>
+</html>

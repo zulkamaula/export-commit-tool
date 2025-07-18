@@ -1,22 +1,62 @@
+# Git Commit Export Tool
 
-# Export Commit Tools
+Tool untuk extract dan grouping git commits berdasarkan author dan tanggal, kemudian export ke Excel.
 
-Aplikasi grouping hasil export log commit git pada project terkait.
+## 🚀 Quick Start
 
+1. **Install dependencies:**
+   ```bash
+   npm install
+   ```
 
-## Steps
+2. **Start server:**
+   ```bash
+   npm run simple
+   ```
 
- - Download ZIP
- - Letakkan file "export-commit.ps1" di dalam folder, lalu klik "Run with Powershell".
- - Kemudian input data yang diperlukan 
- - Kemudian klik Enter, maka hasil export akan secara otomatis dibuatkan folder "Result-Log" di Dekstop dan file hasil exportnya berupa excel dengan nama "Log__{Nama Project}"
- - Buka file excel hasil exportnya lalu copy.
- - Buka aplikasi web "grouping-task" kemudian paste kan data nya ke text-area aplikasi.
- - Kemudian klik tombol "Proses Data", maka hasil grouping commitan berdasarkan waktu dan project berhasil dilakukan.
- - Klik tombol Download Data jika ingin mendownload hasil generate grouping commit-nya.
- - Selamat meng-copas ria untuk timesheet :x
+3. **Open app:**
+   - Buka `standalone-export-tool-enhanced.html` di browser
+   - Server: `http://localhost:3001`
 
-## Authors
+## ✨ Features
 
-- [@zulkamaula](https://www.github.com/zulkamaula)
+- 🔄 **Automated Git Extraction**: Extract commits langsung dari project path
+- 📊 **Smart Grouping**: Group commits berdasarkan tanggal dan project  
+- 📈 **Accumulative Results**: Hasil dari multiple projects ter-akumulasi
+- 📄 **Excel Export**: Export hasil grouping ke Excel dengan format rapi
+- 🖥️ **Clean Interface**: UI modern dengan feedback real-time
+- 📈 **Statistics**: Badge menampilkan total commits dan projects
 
+## 📋 Cara Penggunaan
+
+1. **Jalankan Server**: `npm run simple`
+2. **Buka App**: `standalone-export-tool-enhanced.html` di browser
+3. **Extract Commits**: 
+   - Masukkan project path
+   - Pilih date range dan author
+   - Klik "Extract & Group Commits"
+4. **Review Results**: Lihat hasil grouping yang ditampilkan
+5. **Export Excel**: Klik "Download Excel" jika sudah sesuai
+6. **Multiple Projects**: Ulangi langkah 3 untuk project lain (hasil akan terakumulasi)
+
+## 🔧 Commands
+
+- `npm start` - Start server (alias untuk `npm run simple`)
+- `npm run simple` - Start simple server for standalone app
+
+## 📁 Project Structure
+
+```
+export-commit-tool/
+├── standalone-export-tool-enhanced.html    # Main app
+├── simple-server.js                        # Backend server
+├── package.json                            # Dependencies & scripts
+└── README.md                               # This file
+```
+
+## 🛠️ Tech Stack
+
+- **Frontend**: HTML, CSS (Bootstrap 5), JavaScript
+- **Backend**: Node.js, Express
+- **Export**: SheetJS (xlsx)
+- **Icons**: FontAwesome
