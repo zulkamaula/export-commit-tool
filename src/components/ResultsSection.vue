@@ -47,7 +47,7 @@
         >
           <!-- Date Header -->
           <div class="bg-gray-50 -m-4 p-4 mb-4 rounded-t-lg group">
-            <h3 class="text-lg text-slate-500 font-semibold text-gray-800 flex items-center">
+            <h3 class="text-lg text-slate-500 font-semibold flex items-center">
               <i class="fas fa-calendar mr-2"></i>
               {{ formatDisplayDate(date) }}
 

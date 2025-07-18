@@ -54,7 +54,7 @@
             <button type="submit" :disabled="loading" class="btn-primary w-full flex items-center justify-center">
                 <div v-if="loading" class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                 <i v-else class="fas fa-wand-magic-sparkles mr-2"></i>
-                {{ loading ? 'Extracting...' : 'Extract & Group Commits' }}
+                {{ loading ? 'Extracting...' : 'Let`s Go Extract' }}
             </button>
         </form>
     </div>
