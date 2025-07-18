@@ -12,14 +12,14 @@
             <span class="font-bold text-2xl">{{ stats.totalProjects }}</span> projects
           </p>
         </div>
-        <div class="text-right space-y-3">
+        <div class="flex text-right space-x-3">
           <button 
             @click="$emit('export')"
-            class="bg-white text-blue-600 hover:bg-blue-50 text-sm font-medium py-3 px-4 rounded-lg transition-colors"
+            class="bg-white text-green-600 hover:bg-green-50 text-sm font-medium py-3 px-4 rounded-lg transition-colors"
           >
             <i class="fas fa-download mr-2"></i>Export Excel
           </button>
-          <br>
+          
           <button 
             @click="$emit('clear')"
             class="bg-white text-red-600 hover:bg-red-50 text-sm font-medium py-3 px-4 rounded-lg transition-colors"
@@ -32,21 +32,14 @@
     
     <!-- Grouped Results -->
     <div class="card">
-      <h2 class="section-title">
-        <i class="fas fa-list text-green-500 mr-3"></i>
-        <span class="bg-gradient-to-r from-green-500 to-blue-500 text-transparent bg-clip-text">
-          Grouped Commits
-        </span>
-      </h2>
-      
       <div class="space-y-6 max-h-[500px] overflow-auto">
         <div 
           v-for="date in sortedDates" 
           :key="date"
-          class="border border-gray-200 rounded-lg p-4"
+          class="border border-gray-200 rounded-lg p-3"
         >
           <!-- Date Header -->
-          <div class="bg-gray-50 -m-4 p-4 mb-4 rounded-t-lg group">
+          <div class="bg-gray-50 -m-3 p-3 mb-4 rounded-t-lg group">
             <h3 class="text-lg text-slate-500 font-semibold flex items-center">
               <i class="fas fa-calendar mr-2"></i>
               {{ formatDisplayDate(date) }}
